@@ -1,4 +1,4 @@
-# create-episerver-find-index
+# Create Episerver Find index
 Automation using PhantomJS to create an Episerver Find index
 
 Install PhantomJS:
