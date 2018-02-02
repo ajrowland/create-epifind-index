@@ -1,0 +1,13 @@
+{
+  "name": "create-episerver-find-index",
+  "version": "1.0.0",
+  "description": "Generate an Episerver Find index through automation",
+  "scripts": {
+    "create": "node_modules/.bin/phantomjs createindex.js"
+  },
+  "author": "Andrew Rowland",
+  "license": "GNU GENERAL PUBLIC LICENSE",
+  "devDependencies": {
+    "phantomjs-prebuilt": "^2.1.16"
+  }
+}
