@@ -9,4 +9,4 @@ Create index:
 
 `npm run create [username] [password] [indexname]`
 
-The script returns the configuration for the newly created index, or an existing index if it has already been created.
+The script returns the configuration for the newly created index, or an existing index if it already exists.
