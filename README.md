@@ -1,7 +1,7 @@
 # Create Episerver Find index
 Uses Pupperteer to automate the creation of an Episerver Find index
 
-Install PhantomJS:
+Install dependencies:
 
 `npm install`
 
