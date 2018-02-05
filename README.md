@@ -1,5 +1,5 @@
 # Create Episerver Find index
-Automation using PhantomJS to create an Episerver Find index
+Uses Pupperteer to automate the creation of an Episerver Find index
 
 Install PhantomJS:
 

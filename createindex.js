@@ -1,62 +1,52 @@
-var args = require('system').args
-var page = require('webpage').create()
-var config = {
-  username: args[1],
-  password: args[2],
-  indexname: args[3]
-}
+const puppeteer = require('puppeteer');
 
-page.settings.loadImages = false
+(async () => {
+  const config = {
+    username: process.argv[2],
+    password: process.argv[3],
+    indexname: process.argv[4]
+  }
+  const browser = await puppeteer.launch({headless: false})
+  const page = await browser.newPage()
 
-page.onLoadFinished = function(status) {
-    console.log(page.url)
-    console.log( (!phantom.state ? 'login-form-opened' : phantom.state) + ': ' + status )
-    if(status === 'success') {
-      if (!phantom.state) {
-        page.evaluate(function(config) {
-          var form = document.getElementsByTagName('form')[0]
-          form.elements['UserName'].value = config.username
-          form.elements['Password'].value = config.password
-          form.submit()
-        }, config)
-        phantom.state = 'logged-in'
-      } else if (phantom.state === 'logged-in') {
-        page.open('https://find.episerver.com/MyServices')
-        phantom.state = 'myservices-opened'
-      } else if (phantom.state === 'myservices-opened') {
-        var indexUrl = page.evaluate(function(config) {
-          var indexes = document.getElementsByClassName('display-item')
-          for (var i = 0; i < indexes.length; i++) {
-            if (indexes[i].getElementsByTagName('h3')[0].innerText === config.indexname) {
-              return indexes[i].getElementsByTagName('a')[0].href
-            }
-          }
-          return ''
-        }, config)
-        if (indexUrl) {
-          phantom.state = 'index-details'
-          page.open(indexUrl)
-        } else {
-          phantom.state = 'index-form-opened'
-          page.open('https://find.episerver.com/MyServices/AddFreeIndex')
+  // Login
+  await page.goto('https://find.episerver.com/Account/LogOn')
+  await page.type('#UserName', config.username)
+  await page.type('#Password', config.password)
+  await page.$eval('form', form => form.submit())
+  await page.waitForNavigation()
+
+  // My services
+  await page.goto('https://find.episerver.com/MyServices')
+  
+  let indexUrl = await page.evaluate(config => {
+    let indexes = document.querySelectorAll('.display-item');
+    if (indexes) {
+      for (var index of indexes) {
+        if (index.getElementsByTagName('h3')[0].innerText === config.indexname) {
+          return index.getElementsByTagName('a')[0].href
         }
-      } else if (phantom.state === 'index-form-opened') {
-        page.evaluate(function(config) {
-          var form = document.getElementsByTagName('form')[0]
-          form.elements['Name'].value = config.indexname
-          form.elements['Languages_English'].checked = true
-          form.elements['TermsApproved'][0].checked = true
-          form.submit()
-        }, config);
-        phantom.state = 'index-details'
-      } else if (phantom.state === 'index-details') {
-        var serviceUrl = page.evaluate(function() {
-          return document.getElementsByClassName('display-field')[9].innerText.match(/http.+$/)[0]
-        })
-        console.log('<episerver.find serviceUrl="' + serviceUrl + '" defaultIndex="' + config.username + '_' + config.indexname +'"/>')
-        phantom.exit()
       }
     }
-}
+    return ''
+  }, config)
 
-page.open('https://find.episerver.com/Account/LogOn')
+  if (indexUrl) {
+    await page.goto(indexUrl)
+  } else {
+    // Create index
+    await page.goto('https://find.episerver.com/MyServices/AddFreeIndex')
+    await page.type('#Name', config.indexname)
+    await page.click('#Languages_English')
+    await page.click('#TermsApproved')
+    await page.$eval('form', form => form.submit())
+    await page.waitForNavigation()
+  }
+
+  // Index details
+  let serviceUrl = await page.$$eval('.display-field', items => items[9].innerText.match(/http.+$/)[0])
+
+  console.log(`<episerver.find serviceUrl="${serviceUrl}" defaultIndex="${config.username}_${config.indexname}" />`)
+
+  await browser.close()
+})()
