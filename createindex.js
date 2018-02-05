@@ -1,20 +1,27 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer')
+const config = {
+  username: process.argv[2],
+  password: process.argv[3],
+  indexname: process.argv[4]
+}
+
+console.time('start');
 
 (async () => {
-  const config = {
-    username: process.argv[2],
-    password: process.argv[3],
-    indexname: process.argv[4]
-  }
-  const browser = await puppeteer.launch({headless: false})
+  const browser = await puppeteer.launch({headless: true}) // Debug with: {headless: false, devtools: true}
   const page = await browser.newPage()
+
+  process.on('unhandledRejection', (reason, p) => {
+    console.error('Unhandled Rejection at: Promise', p, 'reason:', reason)
+    browser.close()
+  })
 
   // Login
   await page.goto('https://find.episerver.com/Account/LogOn')
   await page.type('#UserName', config.username)
   await page.type('#Password', config.password)
   await page.$eval('form', form => form.submit())
-  await page.waitForNavigation()
+  await page.waitForSelector('.find_header')
 
   // My services
   await page.goto('https://find.episerver.com/MyServices')
@@ -32,6 +39,7 @@ const puppeteer = require('puppeteer');
   }, config)
 
   if (indexUrl) {
+    // Open index details
     await page.goto(indexUrl)
   } else {
     // Create index
@@ -40,11 +48,11 @@ const puppeteer = require('puppeteer');
     await page.click('#Languages_English')
     await page.click('#TermsApproved')
     await page.$eval('form', form => form.submit())
-    await page.waitForNavigation()
+    await page.waitForSelector('#display-form')
   }
 
-  // Index details
-  let serviceUrl = await page.$$eval('.display-field', items => items[9].innerText.match(/http.+$/)[0])
+  // Output index configuration
+  const serviceUrl = await page.$$eval('.display-field', items => items[9].innerText.match(/http.+$/)[0])
 
   console.log(`<episerver.find serviceUrl="${serviceUrl}" defaultIndex="${config.username}_${config.indexname}" />`)
 
