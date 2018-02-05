@@ -7,6 +7,6 @@ Install PhantomJS:
 
 Create index:
 
-`npm run create [username] [password] [indexname]`
+`node createindex.js --username [username] --password [password] --indexname [indexname]`
 
 The script returns the configuration for the newly created index, or an existing index if it already exists.

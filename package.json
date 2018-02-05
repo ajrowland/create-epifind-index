@@ -8,6 +8,7 @@
   "author": "Andrew Rowland",
   "license": "GNU GENERAL PUBLIC LICENSE",
   "devDependencies": {
+    "minimist": "^1.2.0",
     "puppeteer": "^1.0.0"
   }
 }
