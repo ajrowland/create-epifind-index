@@ -8,7 +8,7 @@ if (!(args.username && args.password && args.indexname)) {
 const puppeteer = require('puppeteer')
 
 ;(async () => {
-  const browser = await puppeteer.launch({headless: false}) // Debug with: {headless: false, devtools: true}
+  const browser = await puppeteer.launch({headless: true}) // Debug with: {headless: false, devtools: true}
   const page = await browser.newPage()
 
   process.on('unhandledRejection', (reason, p) => {
