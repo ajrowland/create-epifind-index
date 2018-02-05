@@ -26,22 +26,29 @@ const puppeteer = require('puppeteer')
   // My services
   await page.goto('https://find.episerver.com/MyServices')
   
-  let indexUrl = await page.evaluate(args => {
+  let index = await page.evaluate(args => {
     let indexes = document.querySelectorAll('.display-item');
+    let url = ''
     if (indexes) {
       for (var index of indexes) {
         if (index.getElementsByTagName('h3')[0].innerText === args.indexname) {
-          return index.getElementsByTagName('a')[0].href
+          url = index.getElementsByTagName('a')[0].href
+          break
         }
       }
     }
-    return ''
+    return {url: url, total: indexes.length}
   }, args)
 
-  if (indexUrl) {
+  if (index.url) {
     // Open index details
-    await page.goto(indexUrl)
+    await page.goto(index.url)
   } else {
+    if (index.total === 5) {
+      console.log('Cannot exceed 5 indexes.')
+      process.exit()
+    }
+
     // Create index
     await page.goto('https://find.episerver.com/MyServices/AddFreeIndex')
     await page.type('#Name', args.indexname)
