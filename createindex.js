@@ -26,8 +26,8 @@ const puppeteer = require('puppeteer')
   // My services
   await page.goto('https://find.episerver.com/MyServices')
   
-  let index = await page.evaluate(args => {
-    let indexes = document.querySelectorAll('.display-item');
+  const index = await page.evaluate(args => {
+    const indexes = document.querySelectorAll('.display-item');
     let url = ''
     if (indexes) {
       for (var index of indexes) {
